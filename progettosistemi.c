@@ -41,15 +41,26 @@ void creaProcesso(alberoProcessi *tree){
 }
 
 //funzione per leggere da tastiera comando
-char *lsh_read_line(){
+char **lsh_read_line(){
    char *line = NULL;
    size_t bufsize = 0; // have getline allocate a buffer for us
    getline(&line, &bufsize, stdin);
-   return line;
+   char ** res  = NULL;
+   char *  p    = strtok (line, " ");
+   int n_spaces = 0;
+   /* split string and append tokens to 'res' */
+   while (p!=NULL) {
+      res = realloc (res, sizeof (char*) * ++n_spaces);
+      if (res == NULL)
+       exit (-1); /* memory allocation failed */
+   res[n_spaces-1] = p;
+   p = strtok (NULL, " ");
+   }
+   return res;
 }
 
 int main(){
-   char* line = NULL;
+   char** line = NULL;
    char* name ="Padre";
    int superPadrePid = getpid();
    alberoProcessi albero = creaAlbero();
@@ -58,15 +69,15 @@ int main(){
    while (superPadrePid == getpid()) {
       printf("> ");
       line = lsh_read_line();
-      if (line[strlen(line) - 1] == '\n')
-         line[strlen(line) - 1] = '\0';
-      if (strcmp(line, "quit") == 0){
+      if (line[0][strlen(line[0]) - 1] == '\n')
+         line[0][strlen(line[0]) - 1] = '\0';
+      if (strcmp(line[0], "quit\n") == 0){
          signal(SIGQUIT, SIG_IGN);
          kill(-superPadrePid, SIGQUIT);
-         sleep(5);
+         sleep(1);
          break;
       }
-      if (strcmp(line, "phelp\n") == 0){
+      if (strcmp(line[0], "phelp") == 0){
          printf("phelp : stampa un elenco dei comandi disponibili \n");
          printf("plist : elenca i processi generati dalla shell custom \n");
          printf("pnew <nome> : crea un nuovo processo con nome <nome> \n");
@@ -74,21 +85,20 @@ int main(){
          printf("pclose <nome> : chiede al processo <nome> di chiudersi \n");
          printf("quit : esce dalla shell custom \n");
       }
-      else if (strcmp(line, "plist") == 0){
+      else if (strcmp(line[0], "plist") == 0){
          stampaGerarchiaProcessi(&albero);
       }
-      else if (strcmp(line, "pnew") == 0){
+      else if (strcmp(line[0], "pnew") == 0){
          creaProcesso(&albero);
       }
-      else if (strcmp(line, "pclose") == 0){
+      else if (strcmp(line[0], "pclose") == 0){
          printf("Case pclose \n");
-         line = lsh_read_line();
-         int val = val = atoi(line);
+         int val = atoi(line[1]);
          killProcess(val);
          sleep(1);
       }
-      else if (strcmp(line, "pinfo") == 0)
-         printf("Case pinfo \n");
+      else if (strcmp(line[0], "pinfo") == 0)
+         printf("Case pinfo\n");
       else printf("Usare phelp per la lista comandi\n");
    }
    fflush(stdout);
