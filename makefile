@@ -1,7 +1,7 @@
-all: progettosistemi child
+all: pmanager child
 
-progettosistemi: tree.c progettosistemi.c 
-	gcc  tree.c progettosistemi.c -o progettosistemi
+pmanager: tree.c pmanager.c
+	gcc  tree.c pmanager.c -o pmanager
 
-child: child.c 
+child: child.c
 	gcc  child.c -o child

@@ -2,12 +2,18 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include "tree.h"
 #include <signal.h>
 #include <errno.h>
 
+char *appendProcessNumber(alberoProcessi *albero){
+   char *nome = malloc(15);
+   sprintf(nome,"Processo%d",albero->numeroProcessi-1);
+   return nome;
+}
 
 void killProcess(int pid){
    if (kill ( pid , SIGKILL ) < 0){
@@ -28,7 +34,7 @@ void catch_child(int sig_num) // funzione necessaria a ricevere segnali dal figl
 void creaProcesso(alberoProcessi *tree){
    int  pid;
    pid = fork();
-   char* name ="Processo1"; // da sistemare con progressivo
+   char* name = appendProcessNumber(tree);
    addNodoProcesso(tree, pid, name); // aggiungo il processo all'albero
    if (pid < 0){
       printf("Errore fork !!\n");
@@ -56,6 +62,8 @@ char **lsh_read_line(){
    res[n_spaces-1] = p;
    p = strtok (NULL, " ");
    }
+   free(p);
+   free(line);
    return res;
 }
 
@@ -71,7 +79,7 @@ int main(){
       line = lsh_read_line();
       if (line[0][strlen(line[0]) - 1] == '\n')
          line[0][strlen(line[0]) - 1] = '\0';
-      if (strcmp(line[0], "quit\n") == 0){
+      if (strcmp(line[0], "quit") == 0){
          signal(SIGQUIT, SIG_IGN);
          kill(-superPadrePid, SIGQUIT);
          sleep(1);
@@ -95,6 +103,7 @@ int main(){
          printf("Case pclose \n");
          int val = atoi(line[1]);
          killProcess(val);
+         eliminaNodo(&albero, val);
          sleep(1);
       }
       else if (strcmp(line[0], "pinfo") == 0)

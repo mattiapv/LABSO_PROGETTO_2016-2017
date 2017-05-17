@@ -1,5 +1,6 @@
 #ifndef TREE_H
 #define TREE_H
+#include <stdbool.h>
 
 // struttura del nodo dell'albero
 typedef struct nodoTree{
@@ -8,6 +9,7 @@ typedef struct nodoTree{
    struct nodoTree* primoFiglio;
    struct nodoTree* fratello;
    int numeroFigli;
+   bool removed;
 }nodoProcesso;
 
 typedef struct tree{
@@ -21,5 +23,7 @@ alberoProcessi creaAlbero();
 void addNodoProcesso(alberoProcessi* tree, int pid, char* processName);
 
 void stampaGerarchiaProcessi(alberoProcessi* albero);
+
+void eliminaNodo(alberoProcessi *albero, int pid);
 
 #endif

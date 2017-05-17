@@ -17,6 +17,7 @@ void addNodoProcesso(alberoProcessi* tree, int pid, char* name){
    nuovoNodo->processName= name;
    nuovoNodo->primoFiglio   = NULL;
    nuovoNodo->fratello  = NULL;
+   nuovoNodo->removed = false;
    if (tree->radice==NULL){ //Aggiunta del processo padre all'alberoProcessi
       nuovoNodo->numeroFigli=0;
       tree->radice=nuovoNodo;
@@ -49,14 +50,30 @@ static void stampaProcesso(nodoProcesso *processo, int spazi){
 }
 
 static void stampaGerarchiaProcessiRic(nodoProcesso *nodo, int profondita){
-   if(nodo!= NULL){
+   if (nodo == NULL)
+      return;
+   if (nodo->removed==false)
       stampaProcesso(nodo, profondita);
       stampaGerarchiaProcessiRic(nodo->fratello, profondita +1);
       stampaGerarchiaProcessiRic(nodo->primoFiglio, profondita +1);
-
-   }
 }
 
 void stampaGerarchiaProcessi(alberoProcessi *albero){
    stampaGerarchiaProcessiRic(albero->radice, 0);
+}
+
+static void eliminaNodoRic(nodoProcesso *nodo, int pid){
+   if (nodo == NULL)
+      return;
+   if (nodo->pid == pid){
+      nodo->removed=true;
+   }
+   else {
+      eliminaNodoRic(nodo->fratello, pid);
+      eliminaNodoRic(nodo->primoFiglio, pid);
+   }
+}
+
+void eliminaNodo(alberoProcessi *albero, int pid){
+   eliminaNodoRic(albero->radice, pid);
 }
