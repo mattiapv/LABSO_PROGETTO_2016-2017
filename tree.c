@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 
 alberoProcessi creaAlbero(){
    alberoProcessi t;
@@ -62,18 +63,37 @@ void stampaGerarchiaProcessi(alberoProcessi *albero){
    stampaGerarchiaProcessiRic(albero->radice, 0);
 }
 
-static void eliminaNodoRic(nodoProcesso *nodo, int pid){
+static void eliminaNodoRic(nodoProcesso *nodo, char *nomeProcesso, int *pid){
    if (nodo == NULL)
       return;
-   if (nodo->pid == pid){
+   int ret = strcmp(nodo->processName, nomeProcesso);
+   if (!ret){
       nodo->removed=true;
+      *pid=nodo->pid;
    }
    else {
-      eliminaNodoRic(nodo->fratello, pid);
-      eliminaNodoRic(nodo->primoFiglio, pid);
+      eliminaNodoRic(nodo->fratello, nomeProcesso, pid);
+      eliminaNodoRic(nodo->primoFiglio, nomeProcesso, pid);
    }
 }
 
-void eliminaNodo(alberoProcessi *albero, int pid){
-   eliminaNodoRic(albero->radice, pid);
+void eliminaNodo(alberoProcessi *albero, char *nomeProcesso, int* pid) {
+     eliminaNodoRic(albero->radice, nomeProcesso, pid);
+}
+
+static void infoNodoRic(nodoProcesso *nodo, char *nomeProcesso, int *pid){
+   if (nodo == NULL)
+      return;
+   int ret = strcmp(nodo->processName, nomeProcesso);
+   if (!ret && nodo->removed==false){
+      *pid=nodo->pid;
+   }
+   else {
+      infoNodoRic(nodo->fratello, nomeProcesso, pid);
+      infoNodoRic(nodo->primoFiglio, nomeProcesso, pid);
+   }
+}
+
+void infoNodo(alberoProcessi *albero, char *nomeProcesso, int* pid) {
+     infoNodoRic(albero->radice, nomeProcesso, pid);
 }

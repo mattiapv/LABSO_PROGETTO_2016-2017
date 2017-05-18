@@ -24,6 +24,8 @@ void addNodoProcesso(alberoProcessi* tree, int pid, char* processName);
 
 void stampaGerarchiaProcessi(alberoProcessi* albero);
 
-void eliminaNodo(alberoProcessi *albero, int pid);
+void eliminaNodo(alberoProcessi *albero, char* nomeProcesso, int* pid);
+
+void infoNodo(alberoProcessi *albero, char *nomeProcesso, int* pid);
 
 #endif

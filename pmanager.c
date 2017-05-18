@@ -9,18 +9,17 @@
 #include <signal.h>
 #include <errno.h>
 
-char *appendProcessNumber(alberoProcessi *albero){
+/*char *appendProcessNumber(alberoProcessi *albero){
    char *nome = malloc(15);
    sprintf(nome,"Processo%d",albero->numeroProcessi-1);
    return nome;
-}
+}*/
 
 void killProcess(int pid){
    if (kill ( pid , SIGKILL ) < 0){
       int en = errno;
       printf("Error while trying to KILL process: %s\n", strerror(en));
    }
-   //printf("Processo killato\n");
 }
 
 void catch_child(int sig_num) // funzione necessaria a ricevere segnali dal figlio
@@ -31,18 +30,20 @@ void catch_child(int sig_num) // funzione necessaria a ricevere segnali dal figl
 }
 
 // funzione per creare processo (pnew)
-void creaProcesso(alberoProcessi *tree){
+void creaProcesso(alberoProcessi *tree, char* line1){
    int  pid;
    pid = fork();
-   char* name = appendProcessNumber(tree);
-   addNodoProcesso(tree, pid, name); // aggiungo il processo all'albero
    if (pid < 0){
       printf("Errore fork !!\n");
       exit(1);
    }
    else if (pid == 0){ // processo figlio
-      execl("child", "Child Process", (char*) NULL); // sostituisco l'immagine del processo figlio con l'immagine di child
+      execl("child", line1, (char*) NULL); // sostituisco l'immagine del processo figlio con l'immagine di child
       printf("Figlio creato");
+   }
+   else {
+      //char* nomeProcesso = appendProcessNumber(tree);
+      addNodoProcesso(tree, pid, line1);
    }
 }
 
@@ -62,8 +63,6 @@ char **lsh_read_line(){
    res[n_spaces-1] = p;
    p = strtok (NULL, " ");
    }
-   free(p);
-   free(line);
    return res;
 }
 
@@ -82,7 +81,7 @@ int main(){
       if (strcmp(line[0], "quit") == 0){
          signal(SIGQUIT, SIG_IGN);
          kill(-superPadrePid, SIGQUIT);
-         sleep(1);
+         //sleep(1);
          break;
       }
       if (strcmp(line[0], "phelp") == 0){
@@ -97,17 +96,50 @@ int main(){
          stampaGerarchiaProcessi(&albero);
       }
       else if (strcmp(line[0], "pnew") == 0){
-         creaProcesso(&albero);
+         while (line[1] == NULL){
+            printf("Usare pnew + nome processo\n");
+            printf("> ");
+            line = lsh_read_line();
+         }
+         if (line[1][strlen(line[1]) - 1] == '\n')
+            line[1][strlen(line[1]) - 1] = '\0';
+         creaProcesso(&albero, line[1]);
       }
       else if (strcmp(line[0], "pclose") == 0){
-         printf("Case pclose \n");
-         int val = atoi(line[1]);
-         killProcess(val);
-         eliminaNodo(&albero, val);
-         sleep(1);
+         while (line[1] == NULL){
+            printf("Usare pclose + nome processo\n");
+            printf("> ");
+            line = lsh_read_line();
+         }
+         if (line[1][strlen(line[1]) - 1] == '\n')
+            line[1][strlen(line[1]) - 1] = '\0';
+         int pid=-1;
+         eliminaNodo(&albero, line[1], &pid);
+         int val = pid;
+         if (val>0){
+            printf("Chiuso processo con pid: %d\n", pid);
+            killProcess(val);
+            sleep(1);
+         }
+         else
+            printf("Processo %s non trovato\n", line[1]);
       }
-      else if (strcmp(line[0], "pinfo") == 0)
-         printf("Case pinfo\n");
+      else if (strcmp(line[0], "pinfo") == 0){
+         while (line[1] == NULL){
+            printf("Usare pinfo + nome processo\n");
+            printf("> ");
+            line = lsh_read_line();
+         }
+         if (line[1][strlen(line[1]) - 1] == '\n')
+            line[1][strlen(line[1]) - 1] = '\0';
+         int pid=-1;
+         infoNodo(&albero, line[1], &pid);
+         int val = pid;
+         if (val ==-1)
+            printf("Processo %s inesistente \n", line[1]);
+         else
+            printf("Il pid del processo %s è %d e il ppid è %d\n", line[1], val, superPadrePid);
+      }
       else printf("Usare phelp per la lista comandi\n");
    }
    fflush(stdout);
