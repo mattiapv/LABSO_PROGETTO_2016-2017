@@ -68,6 +68,7 @@ static void eliminaNodoRic(nodoProcesso *nodo, char *nomeProcesso, int *pid){
       return;
    int ret = strcmp(nodo->processName, nomeProcesso);
    if (!ret){
+      nodo->processName="Rimosso";
       nodo->removed=true;
       *pid=nodo->pid;
    }

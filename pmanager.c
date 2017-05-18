@@ -43,6 +43,7 @@ void creaProcesso(alberoProcessi *tree, char* line1){
    }
    else {
       //char* nomeProcesso = appendProcessNumber(tree);
+      printf("Processo %s con pid %d generato\n", line1, pid);
       addNodoProcesso(tree, pid, line1);
    }
 }
@@ -96,51 +97,48 @@ int main(){
          stampaGerarchiaProcessi(&albero);
       }
       else if (strcmp(line[0], "pnew") == 0){
-         while (line[1] == NULL){
+         if (line[1] == NULL){
             printf("Usare pnew + nome processo\n");
-            printf("> ");
-            line = lsh_read_line();
          }
-         if (line[1][strlen(line[1]) - 1] == '\n')
+         else if (line[1][strlen(line[1]) - 1] == '\n'){
             line[1][strlen(line[1]) - 1] = '\0';
-         creaProcesso(&albero, line[1]);
+            creaProcesso(&albero, line[1]);
+         }
       }
       else if (strcmp(line[0], "pclose") == 0){
-         while (line[1] == NULL){
+         if (line[1] == NULL){
             printf("Usare pclose + nome processo\n");
-            printf("> ");
-            line = lsh_read_line();
          }
-         if (line[1][strlen(line[1]) - 1] == '\n')
+         else if (line[1][strlen(line[1]) - 1] == '\n'){
             line[1][strlen(line[1]) - 1] = '\0';
-         int pid=-1;
-         eliminaNodo(&albero, line[1], &pid);
-         int val = pid;
-         if (val>0){
-            printf("Chiuso processo con pid: %d\n", pid);
-            killProcess(val);
-            sleep(1);
+            int pid=-1;
+            eliminaNodo(&albero, line[1], &pid);
+            int val = pid;
+            if (val>0){
+               printf("Chiuso processo con pid: %d\n", pid);
+               killProcess(val);
+               sleep(1);
+            }
+            else
+               printf("Processo %s non trovato\n", line[1]);
          }
-         else
-            printf("Processo %s non trovato\n", line[1]);
       }
       else if (strcmp(line[0], "pinfo") == 0){
-         while (line[1] == NULL){
+         if (line[1] == NULL){
             printf("Usare pinfo + nome processo\n");
-            printf("> ");
-            line = lsh_read_line();
          }
-         if (line[1][strlen(line[1]) - 1] == '\n')
+         else if (line[1][strlen(line[1]) - 1] == '\n'){
             line[1][strlen(line[1]) - 1] = '\0';
-         int pid=-1;
-         infoNodo(&albero, line[1], &pid);
-         int val = pid;
-         if (val ==-1)
-            printf("Processo %s inesistente \n", line[1]);
-         else
-            printf("Il pid del processo %s è %d e il ppid è %d\n", line[1], val, superPadrePid);
+            int pid=-1;
+            infoNodo(&albero, line[1], &pid);
+            int val = pid;
+            if (val ==-1)
+               printf("Processo %s inesistente \n", line[1]);
+            else
+               printf("Il pid del processo %s è %d e il ppid è %d\n", line[1], val, superPadrePid);
       }
       else printf("Usare phelp per la lista comandi\n");
+      }
    }
    fflush(stdout);
    free(line);
