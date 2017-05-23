@@ -98,3 +98,20 @@ static void infoNodoRic(nodoProcesso *nodo, char *nomeProcesso, int *pid){
 void infoNodo(alberoProcessi *albero, char *nomeProcesso, int* pid) {
      infoNodoRic(albero->radice, nomeProcesso, pid);
 }
+
+static void controlloNomeRic(nodoProcesso *nodo, char* line, bool* nomeProcesso){
+   if (nodo == NULL)
+      return;
+   int ret = strcmp(nodo->processName, line);
+   if (!ret && nodo->removed==false){
+      *nomeProcesso=true;
+   }
+   else {
+      controlloNomeRic(nodo->fratello, line, nomeProcesso);
+      controlloNomeRic(nodo->primoFiglio, line, nomeProcesso);
+   }
+}
+
+void controlloNome(alberoProcessi *albero, char* line, bool *nomeProcesso) {
+     controlloNomeRic(albero->radice, line, nomeProcesso);
+}

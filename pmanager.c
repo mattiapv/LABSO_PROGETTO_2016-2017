@@ -8,6 +8,7 @@
 #include "tree.h"
 #include <signal.h>
 #include <errno.h>
+#include <stdbool.h>
 
 /*char *appendProcessNumber(alberoProcessi *albero){
    char *nome = malloc(15);
@@ -24,14 +25,17 @@ void killProcess(int pid){
 
 void catch_child(int sig_num) // funzione necessaria a ricevere segnali dal figlio
 {
-   int child_status;
-   wait(&child_status);
-   printf("Figlio terminato.\n");
+   int child_status, childPid;
+   childPid = wait(&child_status);
+   printf("Figlio %d terminato\n", childPid);
 }
 
 // funzione per creare processo (pnew)
 void creaProcesso(alberoProcessi *tree, char* line1){
    int  pid;
+   bool nome=false;
+   controlloNome(tree, line1, &nome);
+   if (!nome){
    pid = fork();
    if (pid < 0){
       printf("Errore fork !!\n");
@@ -46,6 +50,9 @@ void creaProcesso(alberoProcessi *tree, char* line1){
       printf("Processo %s con pid %d generato\n", line1, pid);
       addNodoProcesso(tree, pid, line1);
    }
+}
+   else
+      printf("Nome processo già esistente, utilizzare un altro nome\n");
 }
 
 //funzione per leggere da tastiera comando
@@ -115,7 +122,7 @@ int main(){
             eliminaNodo(&albero, line[1], &pid);
             int val = pid;
             if (val>0){
-               printf("Chiuso processo con pid: %d\n", pid);
+               //printf("Chiuso processo con pid: %d\n", pid);
                killProcess(val);
                sleep(1);
             }
@@ -136,9 +143,9 @@ int main(){
                printf("Processo %s inesistente \n", line[1]);
             else
                printf("Il pid del processo %s è %d e il ppid è %d\n", line[1], val, superPadrePid);
+            }
       }
       else printf("Usare phelp per la lista comandi\n");
-      }
    }
    fflush(stdout);
    free(line);

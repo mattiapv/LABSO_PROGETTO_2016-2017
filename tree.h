@@ -28,4 +28,6 @@ void eliminaNodo(alberoProcessi *albero, char* nomeProcesso, int* pid);
 
 void infoNodo(alberoProcessi *albero, char *nomeProcesso, int* pid);
 
+void controlloNome(alberoProcessi *albero, char* line, bool* nomeProcesso);
+
 #endif
