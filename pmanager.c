@@ -27,7 +27,7 @@ void catch_child(int sig_num) // funzione necessaria a ricevere segnali dal figl
 {
    int child_status, childPid;
    childPid = wait(&child_status);
-   printf("Figlio %d terminato\n", childPid);
+   printf("Figlio pid %d terminato\n", childPid);
 }
 
 // funzione per creare processo (pnew)
@@ -123,6 +123,7 @@ int main(){
             int val = pid;
             if (val>0){
                //printf("Chiuso processo con pid: %d\n", pid);
+               //kill(val, SIGUSR1);
                killProcess(val);
                sleep(1);
             }
