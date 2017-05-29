@@ -30,4 +30,8 @@ void infoNodo(alberoProcessi *albero, char *nomeProcesso, int* pid);
 
 void controlloNome(alberoProcessi *albero, char* line, bool* nomeProcesso);
 
+void addNodopspawn(alberoProcessi *albero, char *nomeProcesso, int* pid);
+
+void aggiornaNumeroProcessi(alberoProcessi *albero);
+
 #endif

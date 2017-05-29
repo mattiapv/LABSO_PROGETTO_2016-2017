@@ -42,11 +42,16 @@ void addNodoProcesso(alberoProcessi* tree, int pid, char* name){
 }
 
 static void stampaProcesso(nodoProcesso *processo, int spazi){
-   if (spazi==0){ // se la profondità è zero sono il padre quindi stampo senza spazi
-      printf("%s, Pid: %d, Numero figli: %d\n", processo->processName, processo->pid, processo->numeroFigli);
+   if (spazi==0){
+       // se la profondità è zero sono il padre quindi stampo senza spazi
+      printf("\\_ %s, Pid: %d, Numero figli: %d\n", processo->processName, processo->pid, processo->numeroFigli);
    }
    else {
-      printf("     | %s, Pid: %d, Numero figli: %d\n", processo->processName, processo->pid, processo->numeroFigli);
+      printf("|");
+      int i;
+      for (i=0; i<=spazi; i++)
+         printf("   ");
+      printf("\\_ %s, Pid: %d, Numero figli: %d\n", processo->processName, processo->pid, processo->numeroFigli);
    }
 }
 
@@ -55,8 +60,9 @@ static void stampaGerarchiaProcessiRic(nodoProcesso *nodo, int profondita){
       return;
    if (nodo->removed==false)
       stampaProcesso(nodo, profondita);
-      stampaGerarchiaProcessiRic(nodo->fratello, profondita +1);
       stampaGerarchiaProcessiRic(nodo->primoFiglio, profondita +1);
+      stampaGerarchiaProcessiRic(nodo->fratello, profondita);
+
 }
 
 void stampaGerarchiaProcessi(alberoProcessi *albero){
@@ -114,4 +120,9 @@ static void controlloNomeRic(nodoProcesso *nodo, char* line, bool* nomeProcesso)
 
 void controlloNome(alberoProcessi *albero, char* line, bool *nomeProcesso) {
      controlloNomeRic(albero->radice, line, nomeProcesso);
+}
+
+void aggiornaNumeroProcessi(alberoProcessi *albero){
+   albero->numeroProcessi--;
+   albero->radice->numeroFigli--;
 }
