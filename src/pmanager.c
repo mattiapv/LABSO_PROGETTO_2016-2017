@@ -15,8 +15,10 @@ void catch_child(int sig_num)
 {
    int child_status, childPid;
    childPid = wait(&child_status);
-   if (SIGCHLD == sig_num)
-   printf("Figlio pid %d terminato\n", childPid);
+   if (SIGCHLD == sig_num){
+      int stato = WEXITSTATUS(child_status);
+      printf("Figlio pid %d terminato con codice: %d\n", childPid, stato);
+   }
 }
 
 // funzione per creare un nuovo processo e aggiungerlo all'albero dei processi
@@ -171,6 +173,30 @@ int main(int argc, char ** argv){
                printf("Processo %s inesistente \n", line[1]);
             else
                printf("Il pid del processo %s è %d e il ppid è %d\n", line[1], val, ppid);
+            }
+      }
+      else if (strcmp(line[0], "pspawn") == 0){
+         if (line[1] == NULL){
+            printf("Usare pspawn + nome processo\n");
+         }
+         else if (line[1][strlen(line[1]) - 1] == '\n'){
+            line[1][strlen(line[1]) - 1] = '\0';
+            int pid=-1;
+            int ppid;
+            infoNodo(&albero, line[1], &pid, &ppid);
+            int val = pid;
+            if (val>0){
+               if ( kill(val, SIGUSR2)<0 ) {
+                  int en = errno;
+                  printf("Errore nella clonazione del processo: %s\n", strerror(en));
+               }
+               else {
+                  addNodopspawn(&albero, line[1]);
+                  sleep(1);
+               }
+            }
+            else
+               printf("Processo %s non trovato\n", line[1]);
             }
       }
       else printf("Usare phelp per la lista comandi\n");

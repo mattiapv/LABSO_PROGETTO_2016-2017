@@ -140,3 +140,42 @@ void aggiornaNumeroProcessi(alberoProcessi *albero){
    albero->numeroProcessi--;
    albero->radice->numeroFigli--;
 }
+
+static void addNodopspawnRic(nodoProcesso *nodo, char *nomeProcesso){
+   if (nodo == NULL)
+      return;
+   int ret = strcmp(nodo->processName, nomeProcesso);
+   if (!ret && nodo->removed==false){
+      char *nome = malloc(50);
+      sprintf(nome,"%s_%d",nomeProcesso, nodo->numeroFigli+1);
+      nodoProcesso *nuovoNodo = malloc(sizeof(nodoProcesso));
+      nuovoNodo->pid = 2;
+      nuovoNodo->ppid = nodo->pid;
+      nuovoNodo->processName= nome;
+      nuovoNodo->primoFiglio   = NULL;
+      nuovoNodo->fratello  = NULL;
+      nuovoNodo->removed = false;
+      nodo->numeroFigli++;
+      free(nome);
+      if (nodo->primoFiglio == NULL){ //Controllo se ha già un figlio
+            nodo->primoFiglio = nuovoNodo;
+            printf("Inserisco come primoFiglio\n");
+         }
+         else {
+            nodo = nodo->primoFiglio;
+               while (nodo->fratello != NULL){ //Avanzo tra i fratelli e inserisco alla fine
+               nodo= nodo->fratello;
+               }
+            printf("Inserisco come fratello\n");
+            nodo->fratello=nuovoNodo;
+         }
+      }
+   else {
+      addNodopspawnRic(nodo->fratello, nomeProcesso);
+      addNodopspawnRic(nodo->primoFiglio, nomeProcesso);
+   }
+}
+
+void addNodopspawn(alberoProcessi *albero, char *nomeProcesso) {
+     addNodopspawnRic(albero->radice, nomeProcesso);
+}
