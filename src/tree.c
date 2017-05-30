@@ -12,9 +12,10 @@ alberoProcessi creaAlbero(){
 }
 
 // funzione che aggiunge all'albero dei processi il processo creando un nuovo nodo con relativo pid e nome del processo
-void addNodoProcesso(alberoProcessi* tree, int pid, char* name){
+void addNodoProcesso(alberoProcessi* tree, int pid, int ppid, char* name){
    nodoProcesso *nuovoNodo = malloc(sizeof(nodoProcesso));
    nuovoNodo->pid = pid;
+   nuovoNodo->ppid = ppid;
    nuovoNodo->processName= name;
    nuovoNodo->primoFiglio   = NULL;
    nuovoNodo->fratello  = NULL;
@@ -40,8 +41,8 @@ void addNodoProcesso(alberoProcessi* tree, int pid, char* name){
       }
    }
 }
-
-static void stampaProcesso(nodoProcesso *processo, int spazi){
+// funzione stampaPtree
+static void stampaPtree(nodoProcesso *processo, int spazi){
    if (spazi==0){
        // se la profondità è zero sono il padre quindi stampo senza spazi
       printf("\\_ %s, Pid: %d, Numero figli: %d\n", processo->processName, processo->pid, processo->numeroFigli);
@@ -55,18 +56,30 @@ static void stampaProcesso(nodoProcesso *processo, int spazi){
    }
 }
 
-static void stampaGerarchiaProcessiRic(nodoProcesso *nodo, int profondita){
-   if (nodo == NULL)
-      return;
-   if (nodo->removed==false)
-      stampaProcesso(nodo, profondita);
-      stampaGerarchiaProcessiRic(nodo->primoFiglio, profondita +1);
-      stampaGerarchiaProcessiRic(nodo->fratello, profondita);
-
+// funzione stampaPlist
+static void stampaPlist(nodoProcesso *processo){
+      if (processo->removed==true)
+         printf("Nome: %s, Pid: %d, Numero figli: %d, Stato: Chiuso\n", processo->processName, processo->pid, processo->numeroFigli);
+      else
+         printf("Nome: %s, Pid: %d, Numero figli: %d, Stato: Attivo\n", processo->processName, processo->pid, processo->numeroFigli);
 }
 
-void stampaGerarchiaProcessi(alberoProcessi *albero){
-   stampaGerarchiaProcessiRic(albero->radice, 0);
+//Funzione stampa generale
+static void stampaGerarchiaProcessiRic(nodoProcesso *nodo, int profondita, int tipo){
+   if (nodo == NULL)
+      return;
+   if (tipo){
+      if (nodo->removed==false)
+         stampaPtree(nodo, profondita);
+      }
+   else
+      stampaPlist(nodo);
+   stampaGerarchiaProcessiRic(nodo->primoFiglio, profondita +1, tipo);
+   stampaGerarchiaProcessiRic(nodo->fratello, profondita, tipo);
+}
+//Funzione stampagenerale
+void stampaGerarchiaProcessi(alberoProcessi *albero, int tipo){
+   stampaGerarchiaProcessiRic(albero->radice, 0, tipo);
 }
 
 static void eliminaNodoRic(nodoProcesso *nodo, char *nomeProcesso, int *pid){
@@ -74,7 +87,7 @@ static void eliminaNodoRic(nodoProcesso *nodo, char *nomeProcesso, int *pid){
       return;
    int ret = strcmp(nodo->processName, nomeProcesso);
    if (!ret){
-      nodo->processName="Rimosso";
+      sprintf(nodo->processName, "%s (Rimosso)",nodo->processName);
       nodo->removed=true;
       *pid=nodo->pid;
    }
@@ -88,21 +101,22 @@ void eliminaNodo(alberoProcessi *albero, char *nomeProcesso, int* pid) {
      eliminaNodoRic(albero->radice, nomeProcesso, pid);
 }
 
-static void infoNodoRic(nodoProcesso *nodo, char *nomeProcesso, int *pid){
+static void infoNodoRic(nodoProcesso *nodo, char *nomeProcesso, int *pid, int* ppid){
    if (nodo == NULL)
       return;
    int ret = strcmp(nodo->processName, nomeProcesso);
    if (!ret && nodo->removed==false){
       *pid=nodo->pid;
+      *ppid=nodo->ppid;
    }
    else {
-      infoNodoRic(nodo->fratello, nomeProcesso, pid);
-      infoNodoRic(nodo->primoFiglio, nomeProcesso, pid);
+      infoNodoRic(nodo->fratello, nomeProcesso, pid, ppid);
+      infoNodoRic(nodo->primoFiglio, nomeProcesso, pid, ppid);
    }
 }
 
-void infoNodo(alberoProcessi *albero, char *nomeProcesso, int* pid) {
-     infoNodoRic(albero->radice, nomeProcesso, pid);
+void infoNodo(alberoProcessi *albero, char *nomeProcesso, int* pid, int*ppid) {
+     infoNodoRic(albero->radice, nomeProcesso, pid, ppid);
 }
 
 static void controlloNomeRic(nodoProcesso *nodo, char* line, bool* nomeProcesso){
@@ -119,7 +133,7 @@ static void controlloNomeRic(nodoProcesso *nodo, char* line, bool* nomeProcesso)
 }
 
 void controlloNome(alberoProcessi *albero, char* line, bool *nomeProcesso) {
-     controlloNomeRic(albero->radice, line, nomeProcesso);
+   controlloNomeRic(albero->radice, line, nomeProcesso);
 }
 
 void aggiornaNumeroProcessi(alberoProcessi *albero){

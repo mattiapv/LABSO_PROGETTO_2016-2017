@@ -1,7 +1,6 @@
 .PHONY: help
-.PHONY: clean
+.PHONY: cleanO clean
 .PHONY: buildDir
-.PHONY: run
 
 CC = gcc
 ASSETS = ./assets
@@ -14,19 +13,19 @@ default: help
 
 help:
 	@echo
-	@echo Mattia Pavan 191421
 	@echo Nicholas Grigolato 173880
 	@echo Gianluca Anversa 183933
+	@echo Mattia Pavan 191421
 	@echo
 	@echo Semplice gestore di processi.
 	@echo Permette la creazione e la chiusara di processi.
 	@echo
 	@echo Le regole utilizzabili sono:
-	@echo compile: compila i sorgenti in un eseguibile
-	@echo clean: pulisce i file temporanei generati
-	@echo build: richiama compile e clean in questo ordine
-	@echo test: richiama build ed esegue 10 test con vari input creando i file di output nella cartella assets
-	@echo run: esegue il progetto
+	@echo build: richiama prima clean e compila i sorgenti in un eseguibile
+	@echo clean: pulisce i file temporanei generati e elimina la cartella build
+	@echo test: richiama build ed esegue un test con vari input.
+	@echo run: richiama prima build ed esegue il progetto
+	@echo
 
 compilePmanager: pmanager.o tree.o
 	$(CC) $(BUILD)/pmanager.o $(BUILD)/tree.o -o $(BUILD)/pmanager
@@ -44,17 +43,21 @@ child.o: src/child.c
 	$(CC) $(CFLAGS) -o $(BUILD)/child.o $(SRC)/child.c
 
 clean:
-	rm -rf $(BUILD)/*.o $(ASSETS)/output.*.txt $(ASSETS)/.*~ $(ASSETS)/*~ $(BUILD)/.*~ $(BUILD)/*~ $(SRC)/.*~ $(SRC)/*~
+	rm -rf $(BUILD)
+
+cleanO:
+	rm -rf $(BUILD)/*.o
 
 buildDir:
 	mkdir -p $(BUILDDIR)
 
-build: buildDir compilePmanager compileChild clean
+build: clean buildDir compilePmanager compileChild cleanO
 
-run: build
+chmod:
+	chmod +x run.sh runTest.sh
+
+test: build chmod
+	./runTest.sh
+
+run: build chmod
 	./run.sh
-
-test: build test01
-
-test01:
-	./build/pmanager ./build/test.txt

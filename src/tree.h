@@ -5,6 +5,7 @@
 // struttura del nodo dell'albero
 typedef struct nodoTree{
    int pid;
+   int ppid;
    char* processName;
    struct nodoTree* primoFiglio;
    struct nodoTree* fratello;
@@ -20,17 +21,15 @@ typedef struct tree{
 
 alberoProcessi creaAlbero();
 
-void addNodoProcesso(alberoProcessi* tree, int pid, char* processName);
+void addNodoProcesso(alberoProcessi* tree, int pid, int ppid, char* processName);
 
-void stampaGerarchiaProcessi(alberoProcessi* albero);
+void stampaGerarchiaProcessi(alberoProcessi* albero, int tipo);
 
 void eliminaNodo(alberoProcessi *albero, char* nomeProcesso, int* pid);
 
-void infoNodo(alberoProcessi *albero, char *nomeProcesso, int* pid);
+void infoNodo(alberoProcessi *albero, char *nomeProcesso, int* pid, int* ppid);
 
 void controlloNome(alberoProcessi *albero, char* line, bool* nomeProcesso);
-
-void addNodopspawn(alberoProcessi *albero, char *nomeProcesso, int* pid);
 
 void aggiornaNumeroProcessi(alberoProcessi *albero);
 

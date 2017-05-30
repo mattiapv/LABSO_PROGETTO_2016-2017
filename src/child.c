@@ -2,12 +2,10 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <stdio.h>
-#include <stdbool.h>
 
-bool flag;
 void handler (int signum) {
    if (signum == SIGUSR1)
-    exit(1);
+    _exit(0);
 }
 
 int main(){

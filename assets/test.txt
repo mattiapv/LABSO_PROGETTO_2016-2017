@@ -1,4 +1,3 @@
-pnew Processo0
 pnew Processo1
 pnew Processo2
 pnew Processo3
@@ -9,9 +8,18 @@ pnew Processo7
 pnew Processo8
 pnew Processo9
 pnew Processo10
-pinfo Processo10
+pnew Processo11
+pnew Processo12
+pnew Processo13
+pnew Processo14
+pnew Processo15
+pnew Processo16
+pnew Processo17
+pnew Processo18
+pnew Processo19
+pnew Processo20
+pinfo Processo20
 plist
-pclose Processo0
 pclose Processo1
 pclose Processo2
 pclose Processo3
@@ -24,4 +32,5 @@ pclose Processo9
 pclose Processo10
 pinfo Processo10
 plist
+ptree
 quit

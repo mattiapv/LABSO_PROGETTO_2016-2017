@@ -34,8 +34,9 @@ void creaProcesso(alberoProcessi *tree, char* nomeProcesso){
       execl("child", nomeProcesso, (char*) NULL); // sostituisco l'immagine del processo figlio con l'immagine di child
    }
    else { // processo padre
+      int ppid = getpid();
       printf("Processo %s con pid %d generato\n", nomeProcesso, pid);
-      addNodoProcesso(tree, pid, nomeProcesso); // funzione per aggiungere il processo creato all'albero dei processi
+      addNodoProcesso(tree, pid, ppid, nomeProcesso); // funzione per aggiungere il processo creato all'albero dei processi
    }
 }
    else
@@ -60,7 +61,7 @@ char **leggiInputTastiera(){
    }
    return res;
 }
-
+//funzione per leggere da txt i comandi
 char **leggiInputTxt(FILE* fp){
    char *line = NULL;
    size_t bufsize = 0; //
@@ -89,7 +90,7 @@ int main(int argc, char ** argv){
       }
    int superPadrePid = getpid();
    alberoProcessi albero = creaAlbero(); // creo l'albero dei processi
-   addNodoProcesso(&albero, superPadrePid, name); // Aggiungo il padre all'albero
+   addNodoProcesso(&albero, superPadrePid, superPadrePid, name); // Aggiungo il padre all'albero
    signal(SIGCHLD, catch_child); // creo l'handler per gestire i segnali dai figli
    signal(SIGINT, SIG_IGN); // ctrl-c ignorato
    while (superPadrePid == getpid()) {
@@ -114,12 +115,15 @@ int main(int argc, char ** argv){
          printf("pinfo <nome> : fornisce informazioni sul processo <nome> (almeno  pid  e  ppid ) \n");
          printf("pclose <nome> : chiede al processo <nome> di chiudersi \n");
          printf("pspawn <nome> : chiede al processo <nome> di clonarsi creando <nome_i> con i progressivo\n");
-         printf("prmall <nome> : chiede al processo <nome> di chiudersi chiudendo anche eventuali cloni\n");
+         //printf("prmall <nome> : chiede al processo <nome> di chiudersi chiudendo anche eventuali cloni\n");
          printf("ptree : mostra la gerarchia completa dei processi generati attivi\n");
          printf("quit : esce dalla shell custom \n");
       }
+      else if (strcmp(line[0], "ptree") == 0){
+         stampaGerarchiaProcessi(&albero,1);
+      }
       else if (strcmp(line[0], "plist") == 0){
-         stampaGerarchiaProcessi(&albero);
+         stampaGerarchiaProcessi(&albero,0);
       }
       else if (strcmp(line[0], "pnew") == 0){
          if (line[1] == NULL){
@@ -147,8 +151,7 @@ int main(int argc, char ** argv){
                   printf("Errore nella chiusura del processo: %s\n", strerror(en));
                }else
                   aggiornaNumeroProcessi(&albero);
-                  if (argv[1] == NULL)
-                     sleep(1);
+                  sleep(1);
             }
             else
                printf("Processo %s non trovato\n", line[1]);
@@ -161,12 +164,13 @@ int main(int argc, char ** argv){
          else if (line[1][strlen(line[1]) - 1] == '\n'){
             line[1][strlen(line[1]) - 1] = '\0';
             int pid=-1;
-            infoNodo(&albero, line[1], &pid);
+            int ppid;
+            infoNodo(&albero, line[1], &pid, &ppid);
             int val = pid;
             if (val ==-1)
                printf("Processo %s inesistente \n", line[1]);
             else
-               printf("Il pid del processo %s è %d e il ppid è %d\n", line[1], val, superPadrePid);
+               printf("Il pid del processo %s è %d e il ppid è %d\n", line[1], val, ppid);
             }
       }
       else printf("Usare phelp per la lista comandi\n");
