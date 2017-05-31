@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <stdbool.h>
 
-// funzione necessaria a ricevere segnali dai figli
+// handler necessario a ricevere segnali dai figli attivi
 void catch_child(int sig_num)
 {
    int child_status, childPid;
@@ -30,7 +30,7 @@ void creaProcesso(alberoProcessi *tree, char* nomeProcesso){
       pid = fork();
    if (pid < 0){
       printf("Errore fork !!\n");
-      exit(1);
+      exit(-1);
    }
    else if (pid == 0){ // processo figlio
       execl("child", nomeProcesso, (char*) NULL); // sostituisco l'immagine del processo figlio con l'immagine di child
@@ -57,7 +57,7 @@ char **leggiInputTastiera(){
    while (p!=NULL && numeroSpazi<2) {
       res = realloc (res, sizeof (char*) * ++numeroSpazi);
       if (res == NULL)
-       exit (-1); /* memory allocation failed */
+       exit (-1);
    res[numeroSpazi-1] = p;
    p = strtok (NULL, " ");
    }
@@ -75,7 +75,7 @@ char **leggiInputTxt(FILE* fp){
    while (p!=NULL && numeroSpazi<2) {
       res = realloc (res, sizeof (char*) * ++numeroSpazi);
       if (res == NULL)
-       exit (-1); /* memory allocation failed */
+       exit (-1);
    res[numeroSpazi-1] = p;
    p = strtok (NULL, " ");
    }
@@ -86,6 +86,10 @@ int main(int argc, char ** argv){
    char** line = NULL;
    FILE *fp;
    char* name ="Padre";
+   if (argc>2){
+      printf("Errore sintassi, utilizza ./pmanager oppure ./pmanager ../assets/test.txt\n");
+      exit(-1);
+   }
    if (argv[1] !=NULL){
       if ((fp =fopen(argv[1],"r"))==NULL)
         printf("Error open, file\n");
@@ -95,7 +99,7 @@ int main(int argc, char ** argv){
    addNodoProcesso(&albero, superPadrePid, superPadrePid, name); // Aggiungo il padre all'albero
    signal(SIGCHLD, catch_child); // creo l'handler per gestire i segnali dai figli
    signal(SIGINT, SIG_IGN); // ctrl-c ignorato
-   while (superPadrePid == getpid()) {
+   while (superPadrePid == getpid()) { // shell loop per ricevere comandi, mi assicuro che entri solo il padre nel loop
       if (argv[1] == NULL){
          printf("> ");
          line = leggiInputTastiera();
@@ -107,7 +111,7 @@ int main(int argc, char ** argv){
          line[0][strlen(line[0]) - 1] = '\0';
       if (strcmp(line[0], "quit") == 0){
          signal(SIGQUIT, SIG_IGN);
-         kill(0, SIGQUIT); // chiudo tutti i figli all'uscita del processo padre
+         kill(0, SIGQUIT); // chiudo tutti i figli all'uscita del processo padre. Segnale inviato a tutti i processi del processo chiamante.
          break;
       }
       if (strcmp(line[0], "phelp") == 0){
@@ -116,8 +120,8 @@ int main(int argc, char ** argv){
          printf("pnew <nome> : crea un nuovo processo con nome <nome> \n");
          printf("pinfo <nome> : fornisce informazioni sul processo <nome> (almeno  pid  e  ppid ) \n");
          printf("pclose <nome> : chiede al processo <nome> di chiudersi \n");
-         printf("pspawn <nome> : chiede al processo <nome> di clonarsi creando <nome_i> con i progressivo\n");
-         //printf("prmall <nome> : chiede al processo <nome> di chiudersi chiudendo anche eventuali cloni\n");
+         printf("pspawn <nome> : chiede al processo <nome> di clonarsi creando <nome_i> con i progressivo\n"); // funziona parzialmente
+         //printf("prmall <nome> : chiede al processo <nome> di chiudersi chiudendo anche eventuali cloni\n"); // non fatta
          printf("ptree : mostra la gerarchia completa dei processi generati attivi\n");
          printf("quit : esce dalla shell custom \n");
       }
@@ -148,11 +152,11 @@ int main(int argc, char ** argv){
             eliminaNodo(&albero, line[1], &pid);
             int val = pid;
             if (val>0){
-               if ( kill(val, SIGUSR1)<0 ) {
+               if ( kill(val, SIGUSR1)<0 ) { // invio segnale di chiusura tramite il pid del figlio, mi assicuro che venga ricevuto stampando eventuali errori
                   int en = errno;
                   printf("Errore nella chiusura del processo: %s\n", strerror(en));
                }else
-                  aggiornaNumeroProcessi(&albero);
+                  aggiornaNumeroProcessi(&albero); // aggiorno il numero di processi dell'albero in caso di riuscita di chiusura
                   sleep(1);
             }
             else
@@ -186,7 +190,7 @@ int main(int argc, char ** argv){
             infoNodo(&albero, line[1], &pid, &ppid);
             int val = pid;
             if (val>0){
-               if ( kill(val, SIGUSR2)<0 ) {
+               if ( kill(val, SIGUSR2)<0 ) { // invio segnale di clonazione tramite il pid del figlio, mi assicuro che venga ricevuto stampando eventuali errori
                   int en = errno;
                   printf("Errore nella clonazione del processo: %s\n", strerror(en));
                }

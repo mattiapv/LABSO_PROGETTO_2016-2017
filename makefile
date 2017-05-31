@@ -22,7 +22,7 @@ help:
 	@echo
 	@echo Le regole utilizzabili sono:
 	@echo build: richiama prima clean e compila i sorgenti in un eseguibile
-	@echo clean: pulisce i file temporanei generati e elimina la cartella build
+	@echo clean: pulisce i file oggetto (.o) generati e elimina la cartella build
 	@echo test: richiama build ed esegue un test con vari input.
 	@echo run: richiama prima build ed esegue il progetto
 	@echo
